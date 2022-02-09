@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,28 +40,36 @@ public class RegisterActivity extends AppCompatActivity {
             String password = etPassword.getText().toString().trim();
             String fullName = etFullName.getText().toString().trim();
             boolean error = false;
-            if (email.isEmpty()){
+            if (email.isEmpty()) {
                 etEmail.setError(getString(R.string.requiredError));
                 error = true;
             }
-            if (username.isEmpty()){
+            if (username.isEmpty()) {
                 etUsername.setError(getString(R.string.requiredError));
                 error = true;
             }
-            if (password.isEmpty()){
+            if (password.isEmpty()) {
                 etPassword.setError(getString(R.string.requiredError));
                 error = true;
             }
-            if (fullName.isEmpty()){
+            if (fullName.isEmpty()) {
                 etFullName.setError(getString(R.string.requiredError));
                 error = true;
             }
-            if (error){
+            if (error) {
                 return;
             }
 
             firebaseAuth.fetchSignInMethodsForEmail(email)
-                .addOnCompleteListener(task -> createUser(email, username, password, fullName));
+                .addOnCompleteListener(task -> {
+                    boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+
+                    if (isNewUser) {
+                        createUser(email, username, password, fullName);
+                    } else {
+                        Toast.makeText(this, "Ezzel az e-mail címmel már regisztráltak", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         });
         btnLogin.setOnClickListener(view -> {
@@ -72,13 +81,13 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void createUser(String email, String username, String password, String fullName) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
-        .addOnCompleteListener(task -> {
-            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-            User user = new User(email, username, password);
-            databaseReference.child(firebaseUser.getUid()).setValue(user);
-            firebaseUser.sendEmailVerification();
-            firebaseAuth.signOut();
-        });
+                .addOnCompleteListener(task -> {
+                    FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                    User user = new User(email, username, password);
+                    databaseReference.child(firebaseUser.getUid()).setValue(user);
+                    firebaseUser.sendEmailVerification();
+                    firebaseAuth.signOut();
+                });
     }
 
     private void initialize() {
