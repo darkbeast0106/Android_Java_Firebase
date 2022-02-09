@@ -1,6 +1,5 @@
 package com.darkbeast0106.firebase14s_21_22;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -9,12 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -83,9 +79,12 @@ public class RegisterActivity extends AppCompatActivity {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                    User user = new User(email, username, password);
+                    User user = new User(email, username, fullName);
                     databaseReference.child(firebaseUser.getUid()).setValue(user);
                     firebaseUser.sendEmailVerification();
+                    UserProfileChangeRequest changeRequest
+                            = new UserProfileChangeRequest.Builder().setDisplayName(fullName).build();
+                    firebaseUser.updateProfile(changeRequest);
                     firebaseAuth.signOut();
                     Intent vissza = new Intent(RegisterActivity.this, MainActivity.class);
                     startActivity(vissza);
@@ -96,7 +95,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void initialize() {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
-        etUsername = findViewById(R.id.etUsername);
+        etUsername = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etEmail = findViewById(R.id.etEmail);
         etFullName = findViewById(R.id.etFullName);
