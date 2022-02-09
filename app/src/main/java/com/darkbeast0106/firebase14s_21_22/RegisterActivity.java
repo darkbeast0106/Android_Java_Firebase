@@ -87,6 +87,9 @@ public class RegisterActivity extends AppCompatActivity {
                     databaseReference.child(firebaseUser.getUid()).setValue(user);
                     firebaseUser.sendEmailVerification();
                     firebaseAuth.signOut();
+                    Intent vissza = new Intent(RegisterActivity.this, MainActivity.class);
+                    startActivity(vissza);
+                    finish();
                 });
     }
 
